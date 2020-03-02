@@ -2,19 +2,73 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/css/bootstrap.min.css">
     <title>Чат</title>
 </head>
 <body>
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
 
-<h1>Hello world</h1>
+<div id="app">
+    <!--    <h1>{{ message }}</h1>-->
+
+    <div class="container">
+        <div class="py-5 text-center">
+            <h2>Чат программа</h2>
+            <p class="lead">Укажите ваше имя и начинайте переписку</p>
+        </div>
+        <div class="row">
+            <div class="col-6">
+                <!-- Форма для получения сообщений и имени -->
+                <h3>Форма сообщений</h3>
+
+                <label for="name">Имя</label>
+                <input v-model:value="userName" type="text" name="name" id="name" placeholder="Введите имя"
+                       class="form-control">
+                <br>
+                <label for="message">Сообщение</label>
+                <textarea v-model:value="message" name="message" id="message" class="form-control"
+                          placeholder="Введите сообщение"></textarea>
+                <br>
+                <button v-on:click="sendMessage" class="btn btn-danger">Отправить</button>
+            </div>
+            <div class="col-6">
+                <h3>Сообщения</h3>
+                <!-- Вывод всех сообщений будет здесь -->
+                <div id="all_mess">
+                    <div v-for="message in messages">
+                        {{ message }}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 
 <script src="socket.io/socket.io.js"></script>
 <script>
-    const socket = io()
+    var socket = null;
+    var app = new Vue({
+        el: '#app',
+        data: {
+            userName: null,
+            message: null,
+            messages: []
 
-    socket.on('connection', () => {
-        console.log('Client connected');
-    })
+        },
+        methods: {
+            sendMessage: function () {
+                socket.emit('sendMessage', this.message);
+            }
+        },
+        mounted() {
+            socket.on('addMessage', function (message) {
+                app.messages.push(message);
+            })
+        },
+        created() {
+            socket = io();
+        }
+    });
 </script>
 </body>
 </html>
