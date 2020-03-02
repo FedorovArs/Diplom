@@ -1,0 +1,10 @@
+#app {
+    height: 100%;
+}
+
+#profile-img {
+    height:180px;
+}
+.h-80 {
+    height: 80% !important;
+}
