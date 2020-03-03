@@ -60,7 +60,7 @@
                     </div>
                     <div class="card-body contacts_body">
                         <ul class="contacts">
-                            <li class="active">
+                            <li v-for="user in users" :key="user.id">
                                 <div class="d-flex bd-highlight">
                                     <div class="img_cont">
                                         <img src="https://static.turbosquid.com/Preview/001292/481/WV/_D.jpg"
@@ -68,63 +68,78 @@
                                         <span class="online_icon"></span>
                                     </div>
                                     <div class="user_info">
-                                        <span>Khalid</span>
-                                        <p>Kalid is online</p>
+                                        <span>{{ user.name }}</span>
+                                        <p>{{ user.name }} is online</p>
                                     </div>
                                 </div>
+
                             </li>
-                            <li>
-                                <div class="d-flex bd-highlight">
-                                    <div class="img_cont">
-                                        <img src="https://2.bp.blogspot.com/-8ytYF7cfPkQ/WkPe1-rtrcI/AAAAAAAAGqU/FGfTDVgkcIwmOTtjLka51vineFBExJuSACLcBGAs/s320/31.jpg"
-                                             class="rounded-circle user_img">
-                                        <span class="online_icon offline"></span>
-                                    </div>
-                                    <div class="user_info">
-                                        <span>Taherah Big</span>
-                                        <p>Taherah left 7 mins ago</p>
-                                    </div>
-                                </div>
-                            </li>
-                            <li>
-                                <div class="d-flex bd-highlight">
-                                    <div class="img_cont">
-                                        <img src="https://i.pinimg.com/originals/ac/b9/90/acb990190ca1ddbb9b20db303375bb58.jpg"
-                                             class="rounded-circle user_img">
-                                        <span class="online_icon"></span>
-                                    </div>
-                                    <div class="user_info">
-                                        <span>Sami Rafi</span>
-                                        <p>Sami is online</p>
-                                    </div>
-                                </div>
-                            </li>
-                            <li>
-                                <div class="d-flex bd-highlight">
-                                    <div class="img_cont">
-                                        <img src="https://static.turbosquid.com/Preview/2019/10/10__04_07_14/maria_body_shots00000.jpg37131967-6292-4487-AAD2-F00E985671B4DefaultHQ.jpg"
-                                             class="rounded-circle user_img">
-                                        <span class="online_icon offline"></span>
-                                    </div>
-                                    <div class="user_info">
-                                        <span>Nargis Hawa</span>
-                                        <p>Nargis left 30 mins ago</p>
-                                    </div>
-                                </div>
-                            </li>
-                            <li>
-                                <div class="d-flex bd-highlight">
-                                    <div class="img_cont">
-                                        <img src="https://static.turbosquid.com/Preview/001214/650/2V/boy-cartoon-3D-model_D.jpg"
-                                             class="rounded-circle user_img">
-                                        <span class="online_icon offline"></span>
-                                    </div>
-                                    <div class="user_info">
-                                        <span>Rashid Samim</span>
-                                        <p>Rashid left 50 mins ago</p>
-                                    </div>
-                                </div>
-                            </li>
+
+                            <!--                            <li class="active">-->
+                            <!--                                <div class="d-flex bd-highlight">-->
+                            <!--                                    <div class="img_cont">-->
+                            <!--                                        <img src="https://static.turbosquid.com/Preview/001292/481/WV/_D.jpg"-->
+                            <!--                                             class="rounded-circle user_img">-->
+                            <!--                                        <span class="online_icon"></span>-->
+                            <!--                                    </div>-->
+                            <!--                                    <div class="user_info">-->
+                            <!--                                        <span>Khalid</span>-->
+                            <!--                                        <p>Kalid is online</p>-->
+                            <!--                                    </div>-->
+                            <!--                                </div>-->
+                            <!--                            </li>-->
+                            <!--                            <li>-->
+                            <!--                                <div class="d-flex bd-highlight">-->
+                            <!--                                    <div class="img_cont">-->
+                            <!--                                        <img src="https://2.bp.blogspot.com/-8ytYF7cfPkQ/WkPe1-rtrcI/AAAAAAAAGqU/FGfTDVgkcIwmOTtjLka51vineFBExJuSACLcBGAs/s320/31.jpg"-->
+                            <!--                                             class="rounded-circle user_img">-->
+                            <!--                                        <span class="online_icon offline"></span>-->
+                            <!--                                    </div>-->
+                            <!--                                    <div class="user_info">-->
+                            <!--                                        <span>Taherah Big</span>-->
+                            <!--                                        <p>Taherah left 7 mins ago</p>-->
+                            <!--                                    </div>-->
+                            <!--                                </div>-->
+                            <!--                            </li>-->
+                            <!--                            <li>-->
+                            <!--                                <div class="d-flex bd-highlight">-->
+                            <!--                                    <div class="img_cont">-->
+                            <!--                                        <img src="https://i.pinimg.com/originals/ac/b9/90/acb990190ca1ddbb9b20db303375bb58.jpg"-->
+                            <!--                                             class="rounded-circle user_img">-->
+                            <!--                                        <span class="online_icon"></span>-->
+                            <!--                                    </div>-->
+                            <!--                                    <div class="user_info">-->
+                            <!--                                        <span>Sami Rafi</span>-->
+                            <!--                                        <p>Sami is online</p>-->
+                            <!--                                    </div>-->
+                            <!--                                </div>-->
+                            <!--                            </li>-->
+                            <!--                            <li>-->
+                            <!--                                <div class="d-flex bd-highlight">-->
+                            <!--                                    <div class="img_cont">-->
+                            <!--                                        <img src="https://static.turbosquid.com/Preview/2019/10/10__04_07_14/maria_body_shots00000.jpg37131967-6292-4487-AAD2-F00E985671B4DefaultHQ.jpg"-->
+                            <!--                                             class="rounded-circle user_img">-->
+                            <!--                                        <span class="online_icon offline"></span>-->
+                            <!--                                    </div>-->
+                            <!--                                    <div class="user_info">-->
+                            <!--                                        <span>Nargis Hawa</span>-->
+                            <!--                                        <p>Nargis left 30 mins ago</p>-->
+                            <!--                                    </div>-->
+                            <!--                                </div>-->
+                            <!--                            </li>-->
+                            <!--                            <li>-->
+                            <!--                                <div class="d-flex bd-highlight">-->
+                            <!--                                    <div class="img_cont">-->
+                            <!--                                        <img src="https://static.turbosquid.com/Preview/001214/650/2V/boy-cartoon-3D-model_D.jpg"-->
+                            <!--                                             class="rounded-circle user_img">-->
+                            <!--                                        <span class="online_icon offline"></span>-->
+                            <!--                                    </div>-->
+                            <!--                                    <div class="user_info">-->
+                            <!--                                        <span>Rashid Samim</span>-->
+                            <!--                                        <p>Rashid left 50 mins ago</p>-->
+                            <!--                                    </div>-->
+                            <!--                                </div>-->
+                            <!--                            </li>-->
                         </ul>
                     </div>
                     <div class="card-footer"></div>
@@ -300,6 +315,7 @@
     var app = new Vue({
         el: '#app',
         data: {
+            users: [],
             backgroundImage: "'https://i.imgur.com/xhiRfL6.jpg'",
             isAuthorize: true,
             userName: null,
@@ -312,6 +328,8 @@
                 if (!this.userName) {
                     alert("Set nickname")
                 } else {
+                    this.sendGreeting();
+                    this.getUsers();
                     this.isAuthorize = false;
                     this.backgroundImage = '';
                 }
@@ -319,11 +337,49 @@
 
             sendMessage: function () {
                 socket.emit('sendMessage', this.message);
+            },
+            sendGreeting: function () {
+                socket.emit('greeting', this.userName);
+            },
+            getUsers: function () {
+                socket.emit('getUsers');
             }
         },
         mounted() {
             socket.on('addMessage', function (message) {
                 app.messages.push(message);
+            });
+            socket.on('nameIsBusy', function (message) {
+                alert(message);
+                location.reload();
+            });
+            socket.on('userDisconnect', function (disconnectUser) {
+                for (let i = 0; i < app.users.length; i++) {
+                    let user = app.users[i];
+                    if (user.id === disconnectUser.id) {
+                        app.users.splice(i, 1);
+                        break;
+                    }
+                }
+            });
+            socket.on('onlineUserList', function (usersJson) {
+                let users = JSON.parse(usersJson);
+                app.users.clear;
+
+                users.forEach(function (user) {
+                    if (user.name !== app.userName) {
+                        app.users.push(user);
+                    }
+                });
+            });
+            socket.on('userJoined', function (user) {
+                console.log(`В ${user.connectedTime} подключился пользователь ${user.name}.`);
+                let isAlreadyExist = app.users.some(function (element) {
+                    return element.id === user.id;
+                });
+                if (!isAlreadyExist) {
+                    app.users.push(user);
+                }
             })
         },
         created() {
