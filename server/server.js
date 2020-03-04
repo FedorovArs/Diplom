@@ -22,7 +22,10 @@ io.on('connection', (socket) => {
             socket.emit('nameIsBusy', `Name ${userName} is busy!`);
         } else {
             let time = (new Date).toLocaleTimeString();
-            let user = {name: userName, connectedTime: time, isOnline: true, id: socket.id};
+            let user = {
+                name: userName, connectedTime: time, isOnline: true, id: socket.id, isActive: false,
+                avatar: "https://banner2.cleanpng.com/20190128/ulo/kisspng-security-hacker-white-hat-anonymous-logo-products-and-services-data-solver-5c4f1b3b23ab83.7011001115486881871461.jpg"
+            };
             users.push(user);
             socket.broadcast.emit('userJoined', user);
         }
@@ -34,7 +37,14 @@ io.on('connection', (socket) => {
         }
     });
 
-    socket.on('sendMessage', (msg) => io.emit('addMessage', msg));
+    socket.on('sendMessage', (msg, socketId) => {
+        if (socketId) {
+            io.sockets.sockets[socketId].emit('addMessage', msg)
+        } else {
+            io.emit('addMessage', msg)
+        }
+    });
+
     socket.on('disconnect', function () {
         let time = (new Date).toLocaleTimeString();
         let deleteIndex = null;
@@ -50,11 +60,10 @@ io.on('connection', (socket) => {
         }
 
         if (deleteUser) {
-            console.log(`Пользователь ${deleteUser.name} вышел из чата`);
+            console.log(`В ${time} пользователь ${deleteUser.name} покинул чат`);
             socket.broadcast.emit('userDisconnect', deleteUser);
             users.splice(deleteIndex, 1);
         }
-
     });
 });
 
