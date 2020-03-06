@@ -52,7 +52,8 @@
                 <div class="card mb-sm-3 mb-md-0 contacts_card">
                     <div class="card-header">
                         <div class="input-group">
-                            <input type="text" placeholder="Search..." name="" class="form-control search">
+                            <input type="text" v-model:value="filterValue" placeholder="Search..." name=""
+                                   class="form-control search">
                             <div class="input-group-prepend">
                                 <span class="input-group-text search_btn"><i class="fas fa-search"></i></span>
                             </div>
@@ -60,7 +61,8 @@
                     </div>
                     <div class="card-body contacts_body">
                         <ul class="contacts">
-                            <li v-for="user in users" :key="user.id" @click="selectUser(user)"
+                            <li v-for="user in orderedUsers" :key="user.id"
+                                @click="selectUser(user)"
                                 :class="{ active: user.isActive }">
                                 <div class="d-flex bd-highlight">
                                     <div class="img_cont">
@@ -148,145 +150,154 @@
     let userType = 1;
     let FIRST = 0;
     var app = new Vue({
-            el: '#app',
-            data: {
-                activeUser: 'public',
-                activeMessages: [],
-                activeAvatar: '',
+        el: '#app',
+        data: {
+            activeUser: 'public',
+            activeMessages: [],
+            activeAvatar: '',
 
-                users: [],
-                backgroundImage: "'https://i.imgur.com/xhiRfL6.jpg'",
-                isAuthorize: true,
-                userName: null,
-                userAvatar: "https://banner2.cleanpng.com/20190128/ulo/kisspng-security-hacker-white-hat-anonymous-logo-products-and-services-data-solver-5c4f1b3b23ab83.7011001115486881871461.jpg",
-                message: null,
-                messages: []
+            users: [],
+            filterValue: '',
 
+            backgroundImage: "'https://i.imgur.com/xhiRfL6.jpg'",
+            isAuthorize: true,
+            userName: null,
+            userAvatar: "https://banner2.cleanpng.com/20190128/ulo/kisspng-security-hacker-white-hat-anonymous-logo-products-and-services-data-solver-5c4f1b3b23ab83.7011001115486881871461.jpg",
+            message: null,
+            messages: []
+
+        },
+        methods: {
+            dropdownMenu() {
+                $('.action_menu').toggle();
             },
-            methods: {
-                dropdownMenu() {
-                    $('.action_menu').toggle();
-                },
-                selectUser(user) {
-                    for (let i = 0; i < app.users.length; i++) {
-                        app.users[i][`isActive`] = false;
-                    }
-                    user[`isActive`] = true;
-                    app.activeUser = user.name;
-                    app.activeAvatar = user.avatar;
+            selectUser(user) {
+                for (let i = 0; i < app.users.length; i++) {
+                    app.users[i][`isActive`] = false;
+                }
+                user[`isActive`] = true;
+                app.activeUser = user.name;
+                app.activeAvatar = user.avatar;
 
-                    let filteredMessages = app.messages.filter(function (element) {
-                        return element.id === user.id;
-                    });
-                    app.activeMessages = filteredMessages[FIRST].messages;
-                },
-                authorized: function () {
-                    if (!this.userName) {
-                        alert("Set nickname")
-                    } else {
-                        this.sendGreeting();
-                        this.getUsers();
-                        this.isAuthorize = false;
-                        this.backgroundImage = '';
-                    }
-                },
-
-                sendMessage() {
-                    if (this.message) {
-                        if (this.activeUser !== "public") {
-                            let newMessage = {
-                                type: userType,
-                                message: this.message,
-                                avatar: this.userAvatar,
-                                name: this.userName,
-                                time: (new Date).toLocaleTimeString(),
-                            };
-
-                            app.activeMessages.push(newMessage);
-                        }
-
-                        socket.emit('sendMessage', this.message, this.activeUser);
-                        this.message = '';
-                    }
-                },
-                sendGreeting: function () {
-                    socket.emit('greeting', this.userName);
-                },
-                getUsers: function () {
-                    socket.emit('getUsers');
+                let filteredMessages = app.messages.filter(function (element) {
+                    return element.id === user.id;
+                });
+                app.activeMessages = filteredMessages[FIRST].messages;
+            },
+            authorized: function () {
+                if (!this.userName) {
+                    alert("Set nickname")
+                } else {
+                    this.sendGreeting();
+                    this.getUsers();
+                    this.isAuthorize = false;
+                    this.backgroundImage = '';
                 }
             },
-            mounted() {
-                socket.on('addMessage', function (message) {
-                    if (message.type === publicGroupType) {
-                        let publicUser = app.messages.filter(element => element.id === publicGroupId)[FIRST];
-                        publicUser.messages.push(message);
-                    } else if (message.type === userType) {
-                        let recipientMessages = app.messages.filter(element => element.id === message.recipient);
-                        if (recipientMessages) {
-                            recipientMessages[FIRST].messages.push(message);
-                        }
+
+            sendMessage() {
+                if (this.message) {
+                    if (this.activeUser !== "public") {
+                        let newMessage = {
+                            type: userType,
+                            message: this.message,
+                            avatar: this.userAvatar,
+                            name: this.userName,
+                            time: (new Date).toLocaleTimeString(),
+                        };
+
+                        app.activeMessages.push(newMessage);
                     }
-                });
-                socket.on('nameIsBusy', function (message) {
-                    alert(message);
-                    location.reload();
-                });
-                socket.on('userDisconnect', function (disconnectUser) {
-                    app.messages.filter(element => element.id === publicGroupId)[FIRST]
-                        .messages.push({
-                        type: publicGroupType, message: `User ${disconnectUser.name} disconnected.`,
-                        avatar: "https://banner2.cleanpng.com/20180823/wk/kisspng-computer-icons-service-user-travel-ims-an-amadeus-setting-svg-png-icon-free-download-1999-2-onl-5b7f0a40a5df71.0483892015350523526794.jpg",
-                        name: "System", time: (new Date).toLocaleTimeString()
-                    });
 
-                    for (let i = 0; i < app.users.length; i++) {
-                        let user = app.users[i];
-                        if (user.id === disconnectUser.id) {
-                            app.users.splice(i, 1);
-                            break;
-                        }
+                    socket.emit('sendMessage', this.message, this.activeUser);
+                    this.message = '';
+                }
+            },
+            sendGreeting: function () {
+                socket.emit('greeting', this.userName);
+            },
+            getUsers: function () {
+                socket.emit('getUsers');
+            }
+        },
+        mounted() {
+            socket.on('addMessage', function (message) {
+                if (message.type === publicGroupType) {
+                    let publicUser = app.messages.filter(element => element.id === publicGroupId)[FIRST];
+                    publicUser.messages.push(message);
+                } else if (message.type === userType) {
+                    let recipientMessages = app.messages.filter(element => element.id === message.recipient);
+                    if (recipientMessages) {
+                        recipientMessages[FIRST].messages.push(message);
                     }
+                }
+            });
+            socket.on('nameIsBusy', function (message) {
+                alert(message);
+                location.reload();
+            });
+            socket.on('userDisconnect', function (disconnectUser) {
+                app.messages.filter(element => element.id === publicGroupId)[FIRST]
+                    .messages.push({
+                    type: publicGroupType, message: `User ${disconnectUser.name} disconnected.`,
+                    avatar: "https://banner2.cleanpng.com/20180823/wk/kisspng-computer-icons-service-user-travel-ims-an-amadeus-setting-svg-png-icon-free-download-1999-2-onl-5b7f0a40a5df71.0483892015350523526794.jpg",
+                    name: "System", time: (new Date).toLocaleTimeString()
                 });
-                socket.on('onlineUserList', function (usersJson) {
-                    let users = JSON.parse(usersJson);
-                    app.users.clear;
 
-                    users.forEach(function (user) {
-                        if (user.name !== app.userName) {
-                            app.users.push(user);
-                            app.messages.push({id: user.id, messages: []});
-                        }
-                    });
+                for (let i = 0; i < app.users.length; i++) {
+                    let user = app.users[i];
+                    if (user.id === disconnectUser.id) {
+                        app.users.splice(i, 1);
+                        break;
+                    }
+                }
+            });
+            socket.on('onlineUserList', function (usersJson) {
+                let users = JSON.parse(usersJson);
+                app.users.clear;
 
-                    let filteredMessages = app.messages.filter(function (element) {
-                        return element.id === publicGroupId;
-                    });
-                    app.activeMessages = filteredMessages[FIRST].messages;
-                    app.activeAvatar = app.users.filter(element => element.type === publicGroupType)[0].avatar;
-                });
-                socket.on('userJoined', function (user) {
-                    app.messages.filter(element => element.id === publicGroupId)[FIRST]
-                        .messages.push({
-                        type: publicGroupType, message: `User ${user.name} connected.`,
-                        avatar: "https://banner2.cleanpng.com/20180823/wk/kisspng-computer-icons-service-user-travel-ims-an-amadeus-setting-svg-png-icon-free-download-1999-2-onl-5b7f0a40a5df71.0483892015350523526794.jpg",
-                        name: "System", time: (new Date).toLocaleTimeString()
-                    });
-
-                    let isAlreadyExist = app.users.some(function (element) {
-                        return element.id === user.id;
-                    });
-                    if (!isAlreadyExist) {
+                users.forEach(function (user) {
+                    if (user.name !== app.userName) {
                         app.users.push(user);
                         app.messages.push({id: user.id, messages: []});
                     }
-                })
-            },
-            created() {
-                socket = io({transports: ['websocket'], upgrade: false});
+                });
+
+                let filteredMessages = app.messages.filter(function (element) {
+                    return element.id === publicGroupId;
+                });
+                app.activeMessages = filteredMessages[FIRST].messages;
+                app.activeAvatar = app.users.filter(element => element.type === publicGroupType)[0].avatar;
+            });
+            socket.on('userJoined', function (user) {
+                app.messages.filter(element => element.id === publicGroupId)[FIRST]
+                    .messages.push({
+                    type: publicGroupType, message: `User ${user.name} connected.`,
+                    avatar: "https://banner2.cleanpng.com/20180823/wk/kisspng-computer-icons-service-user-travel-ims-an-amadeus-setting-svg-png-icon-free-download-1999-2-onl-5b7f0a40a5df71.0483892015350523526794.jpg",
+                    name: "System", time: (new Date).toLocaleTimeString()
+                });
+
+                let isAlreadyExist = app.users.some(function (element) {
+                    return element.id === user.id;
+                });
+                if (!isAlreadyExist) {
+                    app.users.push(user);
+                    app.messages.push({id: user.id, messages: []});
+                }
+            })
+        },
+        created() {
+            socket = io({transports: ['websocket'], upgrade: false});
+        },
+        computed: {
+            orderedUsers: function () {
+                return this.users.filter(user => user.name.startsWith(this.filterValue))
+                    .sort(function (a, b) {
+                        return a.type - b.type || a.name.localeCompare(b.name);
+                    });
             }
-        })
-    ;
+        }
+    });
 </script>
 </body>
 </html>
