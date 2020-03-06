@@ -10,29 +10,45 @@ const port = process.env.PORT || 3000;
 
 app.use(express.static(publicPath));
 
+let publicGroupId = "00000000000000000000";
+let publicGroupName = "public";
+let publicGroupType = 0;
+let userType = 1;
+let publicGroupAvatar = "https://www.claycountygov.com/Home/ShowPublishedImage/11750/637051696408170000";
+let defaultUserAvatar = "https://banner2.cleanpng.com/20190128/ulo/kisspng-security-hacker-white-hat-anonymous-logo-products-and-services-data-solver-5c4f1b3b23ab83.7011001115486881871461.jpg";
+let currentTime = '';
+
+function setCurrentTime() {
+    currentTime = (new Date).toLocaleTimeString();
+}
+
+setTimeout(setCurrentTime, 1000);
+
 const users = [{
-    name: 'public',
-    connectedTime: (new Date).toLocaleTimeString(),
+    name: publicGroupName,
+    connectedTime: currentTime,
     isOnline: true,
-    id: '00000000000000000000',
+    id: publicGroupId,
     isActive: true,
-    type: 0,
-    avatar: "https://owips.com/sites/default/files/styles/225x120/public/clipart/avatars-clipart/527317/avatars-clipart-customer-profile-527317-6127671.jpg?itok=dZ_hTtRw"
+    type: publicGroupType,
+    avatar: publicGroupAvatar
 }];
 io.on('connection', (socket) => {
     console.log(`User with socketId ${socket.id} connected!`);
 
     socket.on('greeting', (userName) => {
-        let isAlreadyExist = users.some(function (element) {
-            return element.name === userName;
-        });
+        let isAlreadyExist = users.some(element => element.name === userName);
         if (isAlreadyExist) {
             socket.emit('nameIsBusy', `Name ${userName} is busy!`);
         } else {
-            let time = (new Date).toLocaleTimeString();
             let user = {
-                name: userName, connectedTime: time, isOnline: true, id: socket.id, isActive: false, type: 1,
-                avatar: "https://banner2.cleanpng.com/20190128/ulo/kisspng-security-hacker-white-hat-anonymous-logo-products-and-services-data-solver-5c4f1b3b23ab83.7011001115486881871461.jpg"
+                name: userName,
+                connectedTime: currentTime,
+                isOnline: true,
+                id: socket.id,
+                isActive: false,
+                type: userType,
+                avatar: defaultUserAvatar
             };
             users.push(user);
             socket.broadcast.emit('userJoined', user);
@@ -46,10 +62,10 @@ io.on('connection', (socket) => {
     });
 
     socket.on('sendMessage', (msg, user) => {
-        if (user === 'public') {
+        if (user === publicGroupName) {
             let filteredUsers = users.filter(element => element.id === socket.id);
             io.sockets.emit('addMessage', {
-                type: 0,
+                type: publicGroupType,
                 message: msg,
                 avatar: filteredUsers[0].avatar,
                 name: filteredUsers[0].name,
@@ -64,23 +80,14 @@ io.on('connection', (socket) => {
                 message: msg,
                 avatar: filteredUser.avatar,
                 name: senderUser.name,
-                time: (new Date).toLocaleTimeString(),
-                recipient: socket.id
-            });
-
-            io.sockets.sockets[socket.id].emit('addMessage', {
-                type: 1,
-                message: msg,
-                avatar: filteredUser.avatar,
-                name: '111',
-                time: (new Date).toLocaleTimeString(),
+                time: currentTime,
                 recipient: socket.id
             });
         }
     });
 
     socket.on('disconnect', function () {
-        let time = (new Date).toLocaleTimeString();
+        let time = currentTime;
         let deleteIndex = null;
         let deleteUser = null;
 
@@ -101,6 +108,4 @@ io.on('connection', (socket) => {
     });
 });
 
-server.listen(port, () => {
-    console.log(`Server started on port ${port}`);
-});
+server.listen(port, () => console.log(`Server started on port ${port}`));
