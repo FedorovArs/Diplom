@@ -14,8 +14,8 @@ let publicGroupId = "00000000000000000000";
 let publicGroupName = "public";
 let publicGroupType = 0;
 let userType = 1;
-let publicGroupAvatar = "https://www.claycountygov.com/Home/ShowPublishedImage/11750/637051696408170000";
-let defaultUserAvatar = "https://banner2.cleanpng.com/20190128/ulo/kisspng-security-hacker-white-hat-anonymous-logo-products-and-services-data-solver-5c4f1b3b23ab83.7011001115486881871461.jpg";
+let publicGroupAvatar = "./img/defaultPublicGroupAvatar.jpg";
+let defaultUserAvatar = "./img/defaultUserAvatar.jpg";
 let currentTime = '';
 
 function setCurrentTime() {
