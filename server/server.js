@@ -1,3 +1,5 @@
+const {v4: uuidv4} = require('uuid');
+
 const express = require('express');
 const app = express();
 const server = require('http').createServer(app);
@@ -14,6 +16,7 @@ let publicGroupId = "00000000000000000000";
 let publicGroupName = "public";
 let publicGroupType = 0;
 let userType = 1;
+let groupType = 2;
 let publicGroupAvatar = "./img/defaultPublicGroupAvatar.jpg";
 let defaultUserAvatar = "./img/defaultUserAvatar.jpg";
 let currentTime = '';
@@ -33,8 +36,59 @@ const users = [{
     type: publicGroupType,
     avatar: publicGroupAvatar
 }];
+
+const rooms = [];
 io.on('connection', (socket) => {
     console.log(`User with socketId ${socket.id} connected!`);
+
+    socket.on('addUsersToRoom', (roomName, addUsers) => {
+        let currentRoom = rooms.filter(el => el.name === roomName)[0];
+        for (let i = 0; i < addUsers.length; i++) {
+            let userSocket = io.sockets.sockets[addUsers[i]];
+            userSocket.join(roomName);
+            currentRoom.members.push(addUsers[i]);
+            userSocket.emit('roomCreated', currentRoom)
+        }
+    });
+
+    socket.on('sendRoomMessage', (msg, activeUserName) => {
+        let senderUser = users.filter(el => el.id === socket.id)[0];
+        let room = rooms.filter(el => el.name === activeUserName)[0];
+
+        console.log('sender name ' + senderUser.name);
+
+        io.sockets.to(activeUserName).emit('addRoomMessage', {
+            type: groupType,
+            groupName: activeUserName,
+            message: msg,
+            avatar: defaultUserAvatar,
+            name: senderUser.name,
+            time: currentTime,
+            recipient: room.id
+        });
+    });
+
+    socket.on('createRoom', (roomInfo) => {
+        let isAlreadyExist = rooms.some(element => element.name === roomInfo.roomName);
+        if (isAlreadyExist) {
+            socket.emit('roomNameIsBusy', `Name ${roomInfo.roomName} is busy!`);
+        } else {
+            socket.join(roomInfo.roomName);
+
+            let room = {
+                name: roomInfo.roomName,
+                connectedTime: currentTime,
+                isOnline: true,
+                id: uuidv4(),
+                isActive: false,
+                type: groupType,
+                avatar: publicGroupAvatar,
+                members: [socket.id]
+            };
+            rooms.push(room);
+            socket.emit('roomCreated', room);
+        }
+    });
 
     socket.on('greeting', (userName) => {
         let isAlreadyExist = users.some(element => element.name === userName);
@@ -61,8 +115,8 @@ io.on('connection', (socket) => {
         }
     });
 
-    socket.on('sendMessage', (msg, user) => {
-        if (user === publicGroupName) {
+    socket.on('sendMessage', (msg, activeUserName) => {
+        if (activeUserName === publicGroupName) {
             let filteredUsers = users.filter(element => element.id === socket.id);
             io.sockets.emit('addMessage', {
                 type: publicGroupType,
@@ -73,7 +127,7 @@ io.on('connection', (socket) => {
             });
         } else {
             let senderUser = users.filter(el => el.id === socket.id)[0];
-            let filteredUser = users.filter(el => el.name === user)[0];
+            let filteredUser = users.filter(el => el.name === activeUserName)[0];
 
             io.sockets.sockets[filteredUser.id].emit('addMessage', {
                 type: filteredUser.type,
@@ -104,6 +158,21 @@ io.on('connection', (socket) => {
             console.log(`В ${time} пользователь ${deleteUser.name} покинул чат`);
             socket.broadcast.emit('userDisconnect', deleteUser);
             users.splice(deleteIndex, 1);
+        }
+
+        for (let i = 0; i < rooms.length; i++) {
+            let room = rooms[i];
+
+            for (let j = 0; j < room.members.length; j++) {
+                let memberId = room.members[j];
+                if (memberId === socket.id) {
+                    room.members.splice(j, 1);
+                    if (room.members.length === 0) {
+                        console.log(`Группа ${rooms[i].name} будет удалена`);
+                        rooms.splice(i, 1);
+                    }
+                }
+            }
         }
     });
 });
