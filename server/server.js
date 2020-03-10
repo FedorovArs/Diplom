@@ -15,10 +15,11 @@ app.use(express.static(publicPath));
 let publicGroupId = "00000000000000000000";
 let publicGroupName = "public";
 let publicGroupType = 0;
-let userType = 1;
-let groupType = 2;
+let userType = 2;
+let groupType = 1;
 let publicGroupAvatar = "./img/defaultPublicGroupAvatar.jpg";
 let defaultUserAvatar = "./img/defaultUserAvatar.jpg";
+let privateGroupAvatar = "./img/privateGroupAvatar.png";
 let currentTime = '';
 
 function setCurrentTime() {
@@ -45,17 +46,18 @@ io.on('connection', (socket) => {
         let currentRoom = rooms.filter(el => el.name === roomName)[0];
         for (let i = 0; i < addUsers.length; i++) {
             let userSocket = io.sockets.sockets[addUsers[i]];
-            userSocket.join(roomName);
-            currentRoom.members.push(addUsers[i]);
-            userSocket.emit('roomCreated', currentRoom)
+
+            if (!currentRoom.members.includes(addUsers[i])) {
+                userSocket.join(roomName);
+                currentRoom.members.push(addUsers[i]);
+                userSocket.emit('roomCreated', currentRoom)
+            }
         }
     });
 
     socket.on('sendRoomMessage', (msg, activeUserName) => {
         let senderUser = users.filter(el => el.id === socket.id)[0];
         let room = rooms.filter(el => el.name === activeUserName)[0];
-
-        console.log('sender name ' + senderUser.name);
 
         io.sockets.to(activeUserName).emit('addRoomMessage', {
             type: groupType,
@@ -82,7 +84,7 @@ io.on('connection', (socket) => {
                 id: uuidv4(),
                 isActive: false,
                 type: groupType,
-                avatar: publicGroupAvatar,
+                avatar: privateGroupAvatar,
                 members: [socket.id]
             };
             rooms.push(room);

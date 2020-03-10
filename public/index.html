@@ -100,7 +100,7 @@
                         <span id="action_menu_btn" @click="dropdownMenu"><i class="fas fa-ellipsis-v"></i></span>
                         <div class="action_menu">
                             <ul>
-                                <li><i class="fas fa-user-circle"></i> View profile</li>
+                                <li><i class="fas fa-user-circle "></i> View profile</li>
                                 <li @click="showCreateRoomForm"><i class="fas fa-users"></i> Create room</li>
                                 <li @click="showAddToRoomForm"><i class="fas fa-plus"></i> Add to room</li>
                                 <li><i class="fas fa-ban"></i> Block</li>
@@ -167,8 +167,8 @@
             <div class="col-3 mx-auto">
                 <div class="text-center">
                     <form class="form-create-room">
-
-                        <div v-for="user in onlyUsersWithoutGroups" :key="user.id">
+                        <div class="addUserClass rounded bg-warning text-dark border border-dark form-control form-group"
+                             v-for="user in onlyUsersWithoutGroups" :key="user.id">
                             <input type="checkbox" :id=user.id :value=user.id v-model="checkedUsers">
                             <label :for=user.id>User name: {{user.name}}</label>
                         </div>
@@ -194,8 +194,8 @@
     let socket = null;
     let publicGroupId = "00000000000000000000";
     let publicGroupType = 0;
-    let userType = 1;
-    let roomType = 2;
+    let userType = 2;
+    let roomType = 1;
     let FIRST = 0;
     var app = new Vue({
         el: '#app',
@@ -293,7 +293,7 @@
 
             sendMessage() {
                 if (this.message) {
-                    let user = this.users.filter(s => s.name === this.activeUser)[0];
+                    let user = this.users.filter(s => s.name === this.activeUser)[FIRST];
                     if (this.activeUser !== "public" && user.type !== roomType) {
                         let newMessage = {
                             type: userType,
@@ -306,9 +306,9 @@
                         app.activeMessages.push(newMessage);
                     }
 
-                    if (user.type == 1 || user.type == 0) {
+                    if (user.type == userType || user.type == publicGroupType) {
                         socket.emit('sendMessage', this.message, this.activeUser);
-                    } else if (user.type == 2) {
+                    } else if (user.type == roomType) {
                         socket.emit('sendRoomMessage', this.message, this.activeUser);
                     }
 
@@ -327,13 +327,8 @@
         },
         mounted() {
             socket.on('addRoomMessage', function (message) {
-
-                // console.log('11111111122222222222222 ' + JSON.parse(message));
-                console.log('11111111122222222222222 ' + message);
-
                 let recipientMessages = app.messages.filter(element => element.id === message.recipient);
                 if (recipientMessages) {
-                    console.log(recipientMessages[FIRST].messages);
                     recipientMessages[FIRST].messages.push(message);
                 }
             });
@@ -341,6 +336,13 @@
                 app.users.push(room);
                 app.messages.push({id: room.id, messages: []});
 
+                app.activeUser = room.name;
+                app.activeAvatar = room.avatar;
+                app.activeMessages = app.messages.filter(element => element.id === room.id)[FIRST].messages;
+
+                for (let i = 0; i < app.users.length; i++) {
+                    app.users[i][`isActive`] = app.users[i].name === room.name && app.users[i].type === roomType;
+                }
             });
             socket.on('roomNameIsBusy', function (message) {
                 alert(message);
