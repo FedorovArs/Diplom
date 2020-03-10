@@ -35,8 +35,8 @@
                          src="./img/gayFoxMask.png"/>
                     <p id="profile-name" class="profile-name-card"></p>
                     <form class="form-signin">
-                        <input v-model:value="userName" type="text" class="form-control form-group"
-                               placeholder="nickname" required autofocus/>
+                        <input v-focus @keydown.enter.prevent.exact="authorized" v-model:value="userName"
+                               type="text" maxlength="15" class="form-control form-group" placeholder="nickname"/>
                         <button @click="authorized" type="button" class="btn btn-lg btn-primary btn-block btn-signin">
                             enter
                         </button>
@@ -127,7 +127,7 @@
                                 <span class="input-group-text attach_btn"><i class="fas fa-paperclip"></i></span>
                             </div>
                             <textarea @keydown.ctrl.enter.prevent.exact="sendMessage" v-model:value="message" name=""
-                                      class="form-control type_msg"
+                                      class="form-control type_msg" maxlength="90"
                                       placeholder="Type your message..."></textarea>
                             <div class="input-group-append">
                                 <span v-on:click="sendMessage" class="input-group-text send_btn"><i
@@ -146,7 +146,7 @@
                 <div class="text-center">
                     <form class="form-create-room">
                         <input v-model:value="roomName" type="text" class="form-control form-group"
-                               placeholder="Set room name" required autofocus/>
+                               placeholder="Set room name"/>
                         <button @click="createRoom" type="button"
                                 class="btn btn-lg btn-primary btn-block btn-signin">
                             Create room
@@ -282,6 +282,10 @@
             authorized: function () {
                 if (!this.userName) {
                     alert("Set nickname")
+
+                } else if (this.users.some(el => el.name === this.userName)) {
+                    alert(`Name ${this.userName} is busy!`)
+                    this.userName = '';
                 } else {
                     this.sendGreeting();
                     this.getUsers();
@@ -389,8 +393,10 @@
 
                 users.forEach(function (user) {
                     if (user.name !== app.userName) {
-                        app.users.push(user);
-                        app.messages.push({id: user.id, messages: []});
+                        if (!app.users.some(el => el.name === user.name && el.type === user.type)) {
+                            app.users.push(user);
+                            app.messages.push({id: user.id, messages: []});
+                        }
                     }
                 });
 
@@ -419,10 +425,11 @@
         },
         created() {
             socket = io({transports: ['websocket'], upgrade: false});
+            this.getUsers();
         },
         computed: {
             orderedUsers: function () {
-                return this.users.filter(user => user.name.startsWith(this.filterValue))
+                return this.users.filter(user => user.name.includes(this.filterValue))
                     .sort(function (a, b) {
                         return a.type - b.type || a.name.localeCompare(b.name);
                     });
@@ -432,6 +439,13 @@
                     .sort(function (a, b) {
                         return a.name.localeCompare(b.name);
                     });
+            }
+        },
+        directives: {
+            focus: {
+                inserted: function (el) {
+                    el.focus()
+                }
             }
         }
     });
